@@ -3,7 +3,7 @@ import axios from 'axios'
 
 export const api = axios.create({
     // baseURL: process.env.BASE_URL,
-    baseURL: 'http://localhost:8000/api',
+    baseURL: import.meta.env.VITE_BASE_URL,
     withCredentials: true,
 })
 

@@ -4,7 +4,6 @@ import './index.css'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen.ts'
 import type { AxiosError } from 'axios'
-import 'dotenv/config'
 
 const router = createRouter({routeTree})
 

@@ -4,13 +4,14 @@ import type { LoginCredentials, LoginResponse, RegisterInfo, RegisterResponse} f
 import { type ErrorMessage } from "@/types/error.types";
 import { useMutation} from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import toast from "react-hot-toast";
 
 
 export const useLogin = () => {
     const {setUserId, setUserFullName, setIsAuthenticated}  = useAuth()
     const navigate = useNavigate();
     return useMutation<LoginResponse, ErrorMessage, LoginCredentials>({
-        mutationFn: (credentials: LoginCredentials):Promise<LoginResponse> => login(credentials),
+        mutationFn: (credentials: LoginCredentials) => login(credentials),
         onSuccess: (data) => {
             setIsAuthenticated()
             setUserId(data.user._id)
@@ -18,21 +19,24 @@ export const useLogin = () => {
             navigate({
                 to: '/'
             })
+            toast.success(`Welcome to BlogSansar`, {duration: 1500})
         },
         onError: (error: ErrorMessage) =>{
-            return error
+            toast.error(error.response.data.message)
         }
     })
 }
 
 export const useLogout = () => {
-    const { setIsAuthenticated } = useAuth();
+    const { setUserId, setUserFullName, setIsAuthenticated } = useAuth();
     const navigate = useNavigate();
     return useMutation({
         mutationFn: () => logout(),
         onSuccess: () => {
             setIsAuthenticated()
             sessionStorage.setItem("USER_TOKEN", "")
+            setUserFullName("")
+            setUserId("")
             navigate({
                 to:'/login'
             })
@@ -48,9 +52,10 @@ export const useRegister = ()=>{
             navigate({
                 to: '/login'
             })
+            toast.success("User Registered Successfully")
         },
         onError: (error: ErrorMessage) =>{
-            return error
+            toast.error(error.response.data.message)
         }
     })
 }

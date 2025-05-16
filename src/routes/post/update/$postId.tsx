@@ -14,15 +14,17 @@ import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import PostDetail from "@/components/PostDetail";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { postSchema } from "@/validations/post.validate";
-import { useCreatePost } from "@/hooks/post.hooks";
+import { updatePostSchema } from "@/validations/post.validate";
+import { useUpdatePost } from "@/hooks/post.hooks";
+import { getPostById } from "@/services/post.api";
 
-export const Route = createFileRoute("/post/")({
+export const Route = createFileRoute("/post/update/$postId")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const { postId } = Route.useParams();
 
   const {
     register,
@@ -30,36 +32,40 @@ function RouteComponent() {
     formState: { errors },
     watch,
   } = useForm({
-    defaultValues: {
-      headline: "",
-      image: "",
-      description: "",
-      articleBody: "",
+    defaultValues: async () => {
+      const data = await getPostById(postId);
+      return {
+        headline: data.response.headline,
+        image: data.response.image,
+        description: data.response.description,
+        articleBody: data.response.articleBody,
+      };
     },
-    resolver: zodResolver(postSchema),
+    resolver: zodResolver(updatePostSchema),
   });
 
-  const { isPending, mutate } = useCreatePost();
+  const { isPending, mutate } = useUpdatePost();
   const postInfo = watch();
+
   const handleRedirect = () => {
     navigate({
       to: "/",
     });
   };
 
-  if (isPending) return <span>Creating . . .</span>;
+  if (isPending) return <span>Updating . . .</span>;
   return (
     <div className="grid grid-cols-2 w-full">
       <div className="flex justify-center">
         <Card className="w-4/5 h-[550px]">
           <CardHeader>
-            <CardTitle>Create Post</CardTitle>
+            <CardTitle>Update Post</CardTitle>
             <CardDescription>Write Your Thoughts. . .</CardDescription>
           </CardHeader>
           <CardContent>
             <form
               onSubmit={handleSubmit((data) => {
-                mutate(data);
+                mutate({ postId, data });
               })}
             >
               <div className="grid w-full items-center gap-4">
@@ -129,7 +135,7 @@ function RouteComponent() {
                   Back to Home
                 </Button>
                 <Button onClick={() => console.log("hello")} type="submit">
-                  Create
+                  Update
                 </Button>
               </CardFooter>
             </form>

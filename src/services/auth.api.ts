@@ -4,13 +4,11 @@ import { api } from "@/utils/api";
 
 
 export const login = async (credentials: LoginCredentials): Promise<LoginResponse> => {
-
     const response = await api.post<LoginResponse>('/auth/login', credentials, {
         headers: {
             "Content-Type": "application/json"
         }
     })
-
     sessionStorage.setItem("USER_TOKEN", response.data.token)
     return response.data
 }

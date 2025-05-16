@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
 import { useRegister } from "@/hooks/auth.hooks";
-
+import {useForm} from 'react-hook-form'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerUserSchema } from "@/validations/auth.validate";
 
 export const Route = createFileRoute("/(auth)/register/")({
   component: RouteComponent,
@@ -20,70 +21,60 @@ export const Route = createFileRoute("/(auth)/register/")({
 
 function RouteComponent() {
   
-  const [fullname, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const { isPending, isError, error, mutate} = useRegister();
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    const registerInfo = { fullname, email, password };
-    mutate(registerInfo);
-    setFullName("")
-    setEmail("");
-    setPassword("");
-  };
+  const {register, handleSubmit, formState: {errors}} = useForm({
+    defaultValues: {
+      fullname: "",
+      email: "",
+      password: ""
+    },
+    resolver: zodResolver(registerUserSchema)
+  })
+  const { isPending, mutate} = useRegister();
 
   if (isPending) return <span>Loggin in...</span>;
   
-  if (isError) return <span>Error on login: {error.response.data.message}</span>;
-
-
   return (
-    <div>
+    <div className="flex items-center justify-center">
       <Card className="w-[350px] ">
         <CardHeader className="w-full text-center">
           <CardTitle className="text-2xl">Create an Account.</CardTitle>
         </CardHeader>
-        <form className="flex flex-col gap-6">
+        <form className="flex flex-col gap-6" onSubmit={handleSubmit((data)=>{
+          mutate(data)
+        })}>
           <CardContent>
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="fullname">FullName</Label>
                 <Input
                   type="text"
-                  id="fullname"
-                  value={fullname}
+                  {...register("fullname")}
                   placeholder="Your Fullname"
-                  onChange={(e) => setFullName(e.target.value)}
                 />
+                {errors.fullname?<p className="text-red-400">{errors.fullname.message}</p>: ""}
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   type="email"
-                  id="email"
-                  value={email}
+                  {...register('email')}
                   placeholder="Your Email."
-                  onChange={(e) => setEmail(e.target.value)}
                 />
+                {errors.email?<p className="text-red-400">{errors.email.message}</p>: ""}
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   type="password"
-                  id="password"
-                  value={password}
+                  {...register('password')}
                   placeholder="Your Password."
-                  onChange={(e) => setPassword(e.target.value)}
                 />
+                {errors.password? <p className="text-red-400">{errors.password.message}</p>:""}
               </div>
             </div>
           </CardContent>
           <CardFooter className="w-full flex flex-col gap-4">
-            <Button
-              onClick={(e) => handleLogin(e)}
+            <Button type="submit"
               className="bg-blue-400 w-full hover:cursor-pointer hover:bg-white hover:border-solid hover:border-blue-400 hover:border-2 hover:text-blue-400"
             >
               Create
